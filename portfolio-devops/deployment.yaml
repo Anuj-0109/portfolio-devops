@@ -17,6 +17,7 @@ spec:
       labels:
         app: portfolio-site
     spec:
+      hostNetwork: true 
       containers:
       - name: portfolio-site
         image: anuj0109/portfolio-site:v1
