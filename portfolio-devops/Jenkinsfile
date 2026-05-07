@@ -41,14 +41,9 @@ pipeline {
                         kubectl rollout restart deployment portfolio-deployment
                         kubectl rollout status deployment portfolio-deployment --timeout=120s
                       '''
-                     sh '''
-                          pkill -f "kubectl port-forward --address 0.0.0.0 svc/portfolio-service 30081:8081" || true
-                          nohup kubectl port-forward --address 0.0.0.0 svc/portfolio-service 30081:8081 \
-                            > /var/log/portfolio-portforward.log 2>&1 &
-                              sleep 2
-                              ss -tlnp | grep 30081 || true
-                              tail -n 20 /var/log/portfolio-portforward.log || true
-                        '''
+                        sh 'pkill -f "kubectl port-forward" || true'
+                        sh 'JENKINS_NODE_COOKIE=dontKillMe nohup kubectl port-forward --address 0.0.0.0 svc/portfolio-service 30081:8081 > pf.log 2>&1 &'
+                        sh 'sleep 5'
                 }
             }
         }
