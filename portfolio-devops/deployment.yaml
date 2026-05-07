@@ -20,6 +20,7 @@ spec:
       containers:
       - name: portfolio-site
         image: anuj0109/portfolio-site:v1
+        imagePullPolicy: Always
         ports:
         - containerPort: 8081
         resources:
