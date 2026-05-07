@@ -3,7 +3,6 @@ kind: Service
 metadata:
   name: portfolio-service
 spec:
-  type: LoadBalancer
   selector:
     app: portfolio-site
   ports:
