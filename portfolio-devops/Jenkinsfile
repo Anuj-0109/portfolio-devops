@@ -30,20 +30,26 @@ pipeline {
         }
 
         stage('Deploy') {
-            steps {
+              steps {
                 dir('portfolio-devops') {
-                    sh 'KUBECONFIG=/var/lib/jenkins/.kube/config kubectl apply -f deployment.yaml'
-                    sh 'kubectl apply -f service.yaml'
-                     sh '''
-                          pkill -f "kubectl port-forward --address 0.0.0.0 svc/portfolio-service 30081:8081" || true
-                          nohup kubectl port-forward --address 0.0.0.0 svc/portfolio-service 30081:8081 \
-                            > /var/log/portfolio-portforward.log 2>&1 &
-                              sleep 2
-                              ss -tlnp | grep 30081 || true
-                              tail -n 20 /var/log/portfolio-portforward.log || true
-                        '''
-                }
-            }
-        }
+                  sh '''
+                    export KUBECONFIG=/var/lib/jenkins/.kube/config
+            
+                    # apply manifests (deployment.yaml should have imagePullPolicy: Always)
+                    kubectl apply -f deployment.yaml
+                    kubectl apply -f service.yaml
+            
+                    # ensure pods pick up the newly pushed image (force rolling restart)
+                    kubectl rollout restart deployment portfolio-deployment
+                    kubectl rollout status deployment portfolio-deployment --timeout=120s
+            
+                    # show pods and recent events for verification
+                    kubectl get pods -l app=portfolio-site -o wide
+                    kubectl get events --sort-by='.lastTimestamp' | tail -n 20
+                  '''
+    }
+  }
+}
+
     }
 }
